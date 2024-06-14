@@ -1,0 +1,3 @@
+[submodule "cam-notes"]
+	path = cam-notes
+	url = https://github.com/duydl/cam-notes.git

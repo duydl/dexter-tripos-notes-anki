@@ -1,9 +1,8 @@
-import functools
 import glob
 import os
 
 def print_new(x, file):
-    print_old(x.strip(), file = file, end = " ")
+    print_old(x.strip(), file = file, end=" ")
 print_old = print
 
 def print_final(tag):
@@ -11,26 +10,31 @@ def print_final(tag):
     print(indent + r"\xplain{" + subsection + r"}", file=g)
     print(indent + r"\xplain{" + section + r"}", file=g)
     print(indent + r"\xplain{}", file=g)
-    print(indent + r"\xplain{" +tag+ r"}", file=g)
-    print( r"\end{note}", file=g)
+    print(indent + r"\xplain{" + tag + r"}", file=g)
+    print(r"\end{note}", file=g)
 
+input_dir = "cam-notes/"
+output_dir = "out/"
 
-path = "cam-notes/"
-output = "out/"
-
-tex_files = glob.glob(path + "**/*.tex", recursive=True)
+tex_files = glob.glob(input_dir + "**/*.tex", recursive=True)
 print(tex_files)
 for filetex in tex_files:
-    
     print(filetex)
     count = 0
     switch = 0 # mode - print line when switch >0
-    check = 1 #check if close note or not
+    check = 1 # check if close note or not
     indent = ""
     section = ""
     subsection = ""
-    with open(filetex,'r') as f:
-        with open(output + os.path.basename(filetex) + r"_anki.tex",'w') as g:  
+
+    # Extract relative path and create corresponding output directory
+    relative_path = os.path.dirname(filetex[len(input_dir):])
+    output_subdir = os.path.join(output_dir, relative_path)
+    os.makedirs(output_subdir, exist_ok=True)
+
+    with open(filetex, 'r') as f:
+        output_path = os.path.join(output_subdir, os.path.basename(filetex) + "_anki.tex")
+        with open(output_path, 'w') as g:
             count_of_section = -1
             count_of_subsection = 0
             print(r"\input{_anki_header.tex}", file=g)

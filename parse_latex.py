@@ -7,10 +7,10 @@ def print_start(file):
     print(r"\begin{note}", file=file)
 
 def print_end(tag, section, subsection, file, indent="  "): 
-    print(indent + r"\xplain{" + subsection + r"}", file=file)
-    print(indent + r"\xplain{" + section + r"}", file=file)
-    print(indent + r"\xplain{}", file=file)
-    print(indent + r"\xplain{" + tag + r"}", file=file)
+    print(indent + r"\xplain{" + subsection + r"}" + r"% Subsection", file=file)
+    print(indent + r"\xplain{" + section + r"}" + r"% Section", file=file)
+    print(indent + r"\xplain{}" + r"% Subject", file=file)
+    print(indent + r"\xplain{" + tag + r"}" + r"% Label", file=file)
     print(r"\end{note}", file=file)
 
 def process_tex_files(input_dir, output_dir):
@@ -50,9 +50,9 @@ def process_tex_files(input_dir, output_dir):
                     #     print = print_new
                     # if r"\]" in x or r"\end{align*}" in x:
                     #     print = print_old
+                    if not x.strip(): continue
                     
                     x = x.rstrip()
-                    if not x: continue
                     
                     if r"\section{" in x:
                         count_of_section += 1
@@ -65,22 +65,29 @@ def process_tex_files(input_dir, output_dir):
                         subsection = str(count_of_section) + "." + str(count_of_subsection) + " " + x[x.find("{")+1: x.rfind("}")]
                         print("% " + x, file=output_tex)
 
+                    # TODO: Instead of parsing each line. 
+                    # Aggr all lines in a interested environment
+                    # and parse them all at once.
+                    # Possible to create multiple notes for one environment if needed
 
                     if (r"\begin{defi}" in x or r"\begin{law}" in x) and switch != 2:
                         if check == 0:
                             print(indent + r"\begin{field}", file=output_tex)
                             print(indent + r"\end{field}", file=output_tex)
                             print_end("GENERAL KNOWLEDGE", section, subsection, output_tex, indent=indent) 
-                        switch = 1               
-                        check = 0 
-                        print_start(file=output_tex)
+                        switch = 1
+                        check = 0
                         count = count + 1
-                        # print(r"%" + "Note " + str(count) + " " + filetex, file=output_tex)
+                        print_start(file=output_tex)
+                        
                         print(indent + r"\xplain{" + os.path.basename(filetex) + " " + str(count) + r"}", file=output_tex)
                         print(indent + r"\begin{field}", file=output_tex)
+                        
+                        # Parse vocab into xplain question field
                         if x.find("[") > 0:
                             print(indent + indent + x[x.find("[")+1: x.find("]")], file=output_tex)
                         else : print("add here" + str(count), file=output_tex)
+                        
                         print(indent + r"\end{field}", file=output_tex)
                         print(indent + r"\begin{field}", file=output_tex)
                     if (r"\end{defi}" in x or r"\end{law}" in x) and switch == 1:
@@ -102,20 +109,21 @@ def process_tex_files(input_dir, output_dir):
                         check = 0
                         print_start(file=output_tex)
                         count = count + 1
-                        # print(r"%" + "Note " + str(count) + " " + filetex, file=output_tex)
+
                         print(indent + r"\xplain{" + os.path.basename(filetex) + " " + str(count) + r"}", file=output_tex)
                         print(indent + r"\begin{field}", file=output_tex)     
                     if (r"\end{thm}" in x or r"\end{prop}" in x or 
                         r"\end{lemma}" in x or r"\end{cor}" in x or 
                         r"\end{eg}" in x) and switch == 2:
-                        print (indent + indent + x, file=output_tex)
+                        print(indent + indent + x, file=output_tex)
                         print(indent + r"\end{field}", file=output_tex)
                         switch = 0
 
 
                     if r"\begin{proof}" in x and check == 0:
                         switch = 3
-                        print_start(file=output_tex)
+                        # print_start(file=output_tex)
+                        print(indent + r"\begin{field}", file=output_tex)
                     if r"\end{proof}" in x and switch == 3:
                         print(indent + indent + x, file=output_tex)
                         print(indent + r"\end{field}", file=output_tex)
@@ -123,12 +131,12 @@ def process_tex_files(input_dir, output_dir):
                         check = 1
                         switch = 0
 
-
+                    # Print all lines
                     if switch > 0:
                         if r"\includegraphics" in x:
                             print(indent + indent + r"%" + x, file=output_tex)
                         else:
-                            print (indent + indent + x, file=output_tex)
+                            print(indent + indent + x, file=output_tex)
 
 
                 if check == 0:

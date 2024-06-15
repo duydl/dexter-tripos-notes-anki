@@ -1,11 +1,12 @@
 import glob
 import os
 
-# def print_start(file): 
-#     print("%", file=file)
-#     print(r"\begin{note}", file=file)
+def print_start(file): 
+    print("", file=file)
+    print("%", file=file)
+    print(r"\begin{note}", file=file)
 
-def print_end(tag, section, subsection, file, indent=""): 
+def print_end(tag, section, subsection, file, indent="  "): 
     print(indent + r"\xplain{" + subsection + r"}", file=file)
     print(indent + r"\xplain{" + section + r"}", file=file)
     print(indent + r"\xplain{}", file=file)
@@ -26,7 +27,7 @@ def process_tex_files(input_dir, output_dir):
         count = 0
         switch = 0 # mode - print line when switch > 0
         check = 1 # check if close note or not
-        indent = ""
+        indent = "  "
         section = ""
         subsection = ""
 
@@ -57,22 +58,22 @@ def process_tex_files(input_dir, output_dir):
                         count_of_section += 1
                         count_of_subsection = 0
                         section = str(count_of_section) + " " + x[x.find("{")+1: x.rfind("}")]
-                        print(x, file=output_tex)
+                        print("% " + x, file=output_tex)
                         
                     if r"\subsection{" in x:
                         count_of_subsection += 1
                         subsection = str(count_of_section) + "." + str(count_of_subsection) + " " + x[x.find("{")+1: x.rfind("}")]
-                        print(x, file=output_tex)
+                        print("% " + x, file=output_tex)
 
 
                     if (r"\begin{defi}" in x or r"\begin{law}" in x) and switch != 2:
                         if check == 0:
                             print(indent + r"\begin{field}", file=output_tex)
                             print(indent + r"\end{field}", file=output_tex)
-                            print_end("GENERAL KNOWLEDGE", section, subsection, output_tex) 
+                            print_end("GENERAL KNOWLEDGE", section, subsection, output_tex, indent=indent) 
                         switch = 1               
                         check = 0 
-                        print(r"\begin{note}", file=output_tex)
+                        print_start(file=output_tex)
                         count = count + 1
                         # print(r"%" + "Note " + str(count) + " " + filetex, file=output_tex)
                         print(indent + r"\xplain{" + os.path.basename(filetex) + " " + str(count) + r"}", file=output_tex)
@@ -85,7 +86,7 @@ def process_tex_files(input_dir, output_dir):
                     if (r"\end{defi}" in x or r"\end{law}" in x) and switch == 1:
                         print (indent + indent + x, file=output_tex)
                         print(indent + r"\end{field}", file=output_tex)
-                        print_end("VOCABULARY", section, subsection, output_tex)
+                        print_end("VOCABULARY", section, subsection, output_tex, indent=indent)
                         check = 1
                         switch = 0
 
@@ -96,10 +97,10 @@ def process_tex_files(input_dir, output_dir):
                         if check == 0:
                             print(indent + r"\begin{field}", file=output_tex)
                             print(indent + r"\end{field}", file=output_tex)
-                            print_end("GENERAL KNOWLEDGE", section, subsection, output_tex)  
+                            print_end("GENERAL KNOWLEDGE", section, subsection, output_tex, indent=indent)  
                         switch = 2
                         check = 0
-                        print(r"\begin{note}", file=output_tex)
+                        print_start(file=output_tex)
                         count = count + 1
                         # print(r"%" + "Note " + str(count) + " " + filetex, file=output_tex)
                         print(indent + r"\xplain{" + os.path.basename(filetex) + " " + str(count) + r"}", file=output_tex)
@@ -114,18 +115,18 @@ def process_tex_files(input_dir, output_dir):
 
                     if r"\begin{proof}" in x and check == 0:
                         switch = 3
-                        print(indent + r"\begin{field}", file=output_tex)
+                        print_start(file=output_tex)
                     if r"\end{proof}" in x and switch == 3:
                         print(indent + indent + x, file=output_tex)
                         print(indent + r"\end{field}", file=output_tex)
-                        print_end("PROOF EXCERCISE", section, subsection, output_tex)
+                        print_end("PROOF EXCERCISE", section, subsection, output_tex, indent=indent)
                         check = 1
                         switch = 0
 
 
                     if switch > 0:
                         if r"\includegraphics" in x:
-                            print (indent + indent + r"%" + x, file=output_tex)
+                            print(indent + indent + r"%" + x, file=output_tex)
                         else:
                             print (indent + indent + x, file=output_tex)
 
@@ -133,7 +134,7 @@ def process_tex_files(input_dir, output_dir):
                 if check == 0:
                     print(indent + r"\begin{field}", file=output_tex)
                     print(indent + r"\end{field}", file=output_tex)
-                    print_end("GENERAL KNOWLEDGE", section, subsection, output_tex) 
+                    print_end("GENERAL KNOWLEDGE", section, subsection, output_tex, indent=indent) 
                     
                 print(r"\end{document}", file=output_tex)
 

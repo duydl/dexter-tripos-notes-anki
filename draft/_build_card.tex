@@ -1,0 +1,28 @@
+\usepackage[a4paper]{geometry}
+\geometry{paperwidth=0.5\paperwidth,paperheight=100in,left=2em,right=2em,bottom=1em,top=2em}
+\pagestyle{empty}
+\setlength{\parindent}{0in}
+\geometry{paperheight=250mm}
+
+
+\usepackage{pgfpages}
+\pagestyle{empty}
+\pgfpagesuselayout{8 on 1}[a4paper,border shrink=0cm]
+\makeatletter
+\@tempcnta=1\relax
+\loop\ifnum\@tempcnta<9\relax
+\pgf@pset{\the\@tempcnta}{bordercode}{\pgfusepath{stroke}}
+\advance\@tempcnta by 1\relax
+\repeat
+\makeatother
+
+
+\usepackage[utf8]{inputenc}
+\newenvironment{note}{\paragraph{NOTE:}}{\newpage}
+\newenvironment{field}{\paragraph{}}{}
+\newenvironment{plain}{\ttfamily}{\par}
+\newcommand*{\xplain}[1]{\begin{itemize}\item \texttt{#1}\end{itemize}}
+\newcommand*{\xfield}[1]{\begin{itemize}\item \texttt{#1}\end{itemize}}
+
+
+    

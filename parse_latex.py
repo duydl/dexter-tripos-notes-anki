@@ -43,7 +43,8 @@ def process_tex_files(input_dir, input_subdir, output_dir, env_tags, long_vocab_
             with open(output_path, "w") as output_tex:
                 count_of_section = -1
                 count_of_subsection = 0
-                print(r"\input{_anki_header.tex}", file=output_tex)
+                print(r"\input{../_math_header.tex}", file=output_tex)
+                print(r"\input{../_build_card.tex}", file=output_tex)
                 print(r"\begin{document}", file=output_tex)
                 
                 for line_number, x in enumerate(input_tex, start=1):
@@ -157,7 +158,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process some LaTeX files.")
     parser.add_argument("--input_subdir", type=str, default="", 
                         help="Input subdirectory (i.e term)")
-    parser.add_argument("--output_dir", type=str, default="out",
+    parser.add_argument("--output_dir", type=str, default=".out",
                         help="Output directory")
     parser.add_argument("--long_vocab_count", type=int, default=10, # lines
                         help="Threshold count for long question")

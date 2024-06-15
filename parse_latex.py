@@ -13,15 +13,15 @@ def print_end(tag, section, subsection, file, indent=""):
     print(r"\end{note}", file=file)
 
 def process_tex_files(input_dir, output_dir):
-    global print
-    def print_new(x, file):
-        print_old(x.strip(), file = file, end=" ")
-    print_old = print
+    # global print
+    # def print_new(x, file):
+    #     print_old(x.strip(), file = file, end=" ")
+    # print_old = print
 
     tex_files = glob.glob(input_dir + "**/*.tex", recursive=True)
     print(tex_files)
     for filetex in tex_files:
-        print = print_old
+        # print = print_old
         print(filetex)
         count = 0
         switch = 0 # mode - print line when switch > 0
@@ -45,10 +45,10 @@ def process_tex_files(input_dir, output_dir):
                 print(r"\begin{document}", file=output_tex)     
                 for x in input_tex:
                     
-                    if r"\[" in x or r"\begin{align*}" in x:
-                        print = print_new
-                    if r"\]" in x or r"\end{align*}" in x:
-                        print = print_old
+                    # if r"\[" in x or r"\begin{align*}" in x:
+                    #     print = print_new
+                    # if r"\]" in x or r"\end{align*}" in x:
+                    #     print = print_old
                     
                     x = x.rstrip()
                     if not x: continue

@@ -14,19 +14,27 @@ def print_end(tag, section, subsection, file, indent="  "):
     print(r"\end{note}", file=file)
 
 def process_tex_files(input_dir, output_dir):
-    # global print
-    # def print_new(x, file):
-    #     print_old(x.strip(), file = file, end=" ")
-    # print_old = print
 
+    # Environment to tag mapping
+    env_tags = {
+        "defi": "VOCABULARY",
+        "law": "VOCABULARY",
+        "thm": "THEOREM",
+        "prop": "PROPOSITION",
+        "lemma": "LEMMA",
+        "cor": "COROLLARY",
+        "eg": "EXAMPLE",
+        "proof": "PROOF EXERCISE"
+    }
+    
     tex_files = glob.glob(input_dir + "**/*.tex", recursive=True)
     print(tex_files)
     for filetex in tex_files:
         # print = print_old
         print(filetex)
         count = 0
-        switch = 0 # mode - print line when switch > 0
-        check = 1 # check if close note or not
+        buffer = []
+        environment_active = False
         indent = "  "
         section = ""
         subsection = ""
@@ -45,105 +53,48 @@ def process_tex_files(input_dir, output_dir):
                 print(r"\input{_build_card_1}", file=output_tex)
                 print(r"\begin{document}", file=output_tex)     
                 for x in input_tex:
-                    
-                    # if r"\[" in x or r"\begin{align*}" in x:
-                    #     print = print_new
-                    # if r"\]" in x or r"\end{align*}" in x:
-                    #     print = print_old
-                    if not x.strip(): continue
-                    
                     x = x.rstrip()
-                    
-                    if r"\section{" in x:
-                        count_of_section += 1
-                        count_of_subsection = 0
-                        section = str(count_of_section) + " " + x[x.find("{")+1: x.rfind("}")]
-                        print("% " + x, file=output_tex)
+                    if not x.strip():
+                        continue
+
+                    # Detect the beginning of a new environment
+                    if r"\begin{" in x:
+                        env_name = x.split("{")[1].split("}")[0]
+                        if env_name in env_tags:
+                            count += 1
+                            environment_active = True
+                            environment_name = env_name
+                            buffer.append(x)
+                            print_start(output_tex)
+                            print(indent + r"\xplain{" + os.path.basename(filetex) + " " + str(count) + r"}", file=output_tex)
+                            continue
+
+                    # Detect the end of the current environment
+                    if environment_active and r"\end{" + environment_name + "}" in x:
+                        buffer.append(x)
+                        # Process the entire buffer here
+                        for line in buffer:
+                            print(indent + line, file=output_tex)
+                        print_end(env_tags[environment_name], section, subsection, output_tex, indent)
+                        buffer = []
+                        environment_active = False
+                        continue
+
+                    if environment_active:
+                        buffer.append(x)
+                    else:
+                        # Regular line processing outside of environments
+                        if r"\section{" in x:
+                            count_of_section += 1
+                            count_of_subsection = 0
+                            section = str(count_of_section) + " " + x[x.find("{")+1: x.rfind("}")]
+                            print("% " + x, file=output_tex)
                         
-                    if r"\subsection{" in x:
-                        count_of_subsection += 1
-                        subsection = str(count_of_section) + "." + str(count_of_subsection) + " " + x[x.find("{")+1: x.rfind("}")]
-                        print("% " + x, file=output_tex)
+                        if r"\subsection{" in x:
+                            count_of_subsection += 1
+                            subsection = str(count_of_section) + "." + str(count_of_subsection) + " " + x[x.find("{")+1: x.rfind("}")]
+                            print("% " + x, file=output_tex)
 
-                    # TODO: Instead of parsing each line. 
-                    # Aggr all lines in a interested environment
-                    # and parse them all at once.
-                    # Possible to create multiple notes for one environment if needed
-
-                    if (r"\begin{defi}" in x or r"\begin{law}" in x) and switch != 2:
-                        if check == 0:
-                            print(indent + r"\begin{field}", file=output_tex)
-                            print(indent + r"\end{field}", file=output_tex)
-                            print_end("GENERAL KNOWLEDGE", section, subsection, output_tex, indent=indent) 
-                        switch = 1
-                        check = 0
-                        count = count + 1
-                        print_start(file=output_tex)
-                        
-                        print(indent + r"\xplain{" + os.path.basename(filetex) + " " + str(count) + r"}", file=output_tex)
-                        print(indent + r"\begin{field}", file=output_tex)
-                        
-                        # Parse vocab into xplain question field
-                        if x.find("[") > 0:
-                            print(indent + indent + x[x.find("[")+1: x.find("]")], file=output_tex)
-                        else : print("add here" + str(count), file=output_tex)
-                        
-                        print(indent + r"\end{field}", file=output_tex)
-                        print(indent + r"\begin{field}", file=output_tex)
-                    if (r"\end{defi}" in x or r"\end{law}" in x) and switch == 1:
-                        print (indent + indent + x, file=output_tex)
-                        print(indent + r"\end{field}", file=output_tex)
-                        print_end("VOCABULARY", section, subsection, output_tex, indent=indent)
-                        check = 1
-                        switch = 0
-
-
-                    if (r"\begin{thm}" in x or 
-                        r"\begin{prop}" in x or r"\begin{lemma}" in x or 
-                        r"\begin{cor}" in x or r"\begin{eg}" in x) and switch != 1: 
-                        if check == 0:
-                            print(indent + r"\begin{field}", file=output_tex)
-                            print(indent + r"\end{field}", file=output_tex)
-                            print_end("GENERAL KNOWLEDGE", section, subsection, output_tex, indent=indent)  
-                        switch = 2
-                        check = 0
-                        print_start(file=output_tex)
-                        count = count + 1
-
-                        print(indent + r"\xplain{" + os.path.basename(filetex) + " " + str(count) + r"}", file=output_tex)
-                        print(indent + r"\begin{field}", file=output_tex)     
-                    if (r"\end{thm}" in x or r"\end{prop}" in x or 
-                        r"\end{lemma}" in x or r"\end{cor}" in x or 
-                        r"\end{eg}" in x) and switch == 2:
-                        print(indent + indent + x, file=output_tex)
-                        print(indent + r"\end{field}", file=output_tex)
-                        switch = 0
-
-
-                    if r"\begin{proof}" in x and check == 0:
-                        switch = 3
-                        # print_start(file=output_tex)
-                        print(indent + r"\begin{field}", file=output_tex)
-                    if r"\end{proof}" in x and switch == 3:
-                        print(indent + indent + x, file=output_tex)
-                        print(indent + r"\end{field}", file=output_tex)
-                        print_end("PROOF EXCERCISE", section, subsection, output_tex, indent=indent)
-                        check = 1
-                        switch = 0
-
-                    # Print all lines
-                    if switch > 0:
-                        if r"\includegraphics" in x:
-                            print(indent + indent + r"%" + x, file=output_tex)
-                        else:
-                            print(indent + indent + x, file=output_tex)
-
-
-                if check == 0:
-                    print(indent + r"\begin{field}", file=output_tex)
-                    print(indent + r"\end{field}", file=output_tex)
-                    print_end("GENERAL KNOWLEDGE", section, subsection, output_tex, indent=indent) 
-                    
                 print(r"\end{document}", file=output_tex)
 
 if __name__ == "__main__":

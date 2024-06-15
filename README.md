@@ -14,6 +14,8 @@ Before you begin, ensure you have the following installed:
 - Python 3.8 or higher
 - [Anki](https://apps.ankiweb.net/) installed with extensions:
   - [LaTeX Note Importer](https://ankiweb.net/shared/info/1199027445)
+  - [Latex On-Off](https://ankiweb.net/shared/info/2083624459) (Optional - Temporarily disable Latex Rendering to allow smooth preview)
+  - 
 
 To create a clearer and more complete README that includes additional installation steps for the submodule and corrects a few misstatements in the usage instructions, follow this updated layout:
 
